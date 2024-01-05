@@ -16,7 +16,7 @@ RUN set -ex; \
     export PATH="$PATH;/usr/local/bin/chromedriver"
 
 # Build environment variables
-ENV TESSDATA_PREFIX=/home/$FRAPPE_USER/tessdata
+ENV TESSDATA_PREFIX=/$HOME/$FRAPPE_USER/tessdata
 
 # Install Tesseract dependencies
 RUN set -ex; \
@@ -31,7 +31,7 @@ RUN set -ex; \
         pkg-config \
     ; \
     sudo rm -rf /var/lib/apt/lists/*; \
-    mkdir -p "$TESSDATA_PREFIX"; \
+    sudo mkdir -p "$TESSDATA_PREFIX"; \
     sudo chown -R "${FRAPPE_USER}:${FRAPPE_USER}" "${TESSDATA_PREFIX}" ; \
     curl -sS -o "${TESSDATA_PREFIX}/eng.traineddata" https://raw.github.com/tesseract-ocr/tessdata/master/eng.traineddata; \
     curl -sS -o "${TESSDATA_PREFIX}/equ.traineddata" https://raw.github.com/tesseract-ocr/tessdata/master/equ.traineddata; \
@@ -45,22 +45,22 @@ RUN set -ex; \
         -e 's/rights="none" pattern="PDF"/rights="read" pattern="PDF"/g' \
         /etc/ImageMagick*/policy.xml \
     ; \
-    sudo mkdir -p "/home/${FRAPPE_USER}"/frappe-bench/logs; \
-    sudo touch "/home/${FRAPPE_USER}"/frappe-bench/logs/bench.log; \
+    sudo mkdir -p "/$HOME/${FRAPPE_USER}"/frappe-bench/logs; \
+    sudo touch "/$HOME/${FRAPPE_USER}"/frappe-bench/logs/bench.log; \
     sudo chmod 777 \
-        "/home/${FRAPPE_USER}"/frappe-bench/logs \
-        "/home/${FRAPPE_USER}"/frappe-bench/logs/* \
+        "/$HOME/${FRAPPE_USER}"/frappe-bench/logs \
+        "/$HOME/${FRAPPE_USER}"/frappe-bench/logs/* \
     ;
 
 # Build environment variables
 ARG FRAPPE_APP_TO_TEST=${FRAPPE_APP_TO_TEST}
 
 # Copy the whole repository to app folder for manual install
-COPY --chown=frappe:frappe . "/home/${FRAPPE_USER}/frappe-bench/apps/${FRAPPE_APP_TO_TEST}"
+COPY --chown=frappe:frappe . "/$HOME/${FRAPPE_USER}/frappe-bench/apps/${FRAPPE_APP_TO_TEST}"
 
 # Install current app
 RUN set -ex; \
     ./env/bin/pip install -q -U -e "./apps/${FRAPPE_APP_TO_TEST}"; \
     bench build --app "${FRAPPE_APP_TO_TEST}"
 
-VOLUME "/home/${FRAPPE_USER}/frappe-bench/apps/${FRAPPE_APP_TO_TEST}/public"
+VOLUME "/$HOME/${FRAPPE_USER}/frappe-bench/apps/${FRAPPE_APP_TO_TEST}/public"
